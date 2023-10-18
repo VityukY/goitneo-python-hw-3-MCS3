@@ -1,4 +1,8 @@
+import re
 from collections import UserDict
+from celebration_calendar import get_birthdays_per_week  # але треба реворкнути
+from datetime import datetime
+from custom_exception import *
 
 
 class Field:
@@ -14,6 +18,14 @@ class Name(Field):
         self.value = name.title()
 
 
+class Birthday(Field):
+    def __init__(self, value):
+        if re.search("\d{2}.\d{2}.\d{4}", value):
+            self.value = value
+        else:
+            raise DateFormatError()
+
+
 class Phone(Field):
     def __init__(self, value):
         if len(value) == 10 and value.isdigit():
@@ -26,10 +38,13 @@ class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
-        print("new user record created")
+        self.birthday = None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
+
+    def add_birthday(self, birthday):
+        self.birthday = Birthday(birthday)
 
     def remove_phone(self, phone):
         for p in self.phones:
@@ -45,7 +60,6 @@ class Record:
                 new_phone = Phone(new_phone)
                 self.phones.insert(cur_index, new_phone)
                 self.phones.remove(p)
-                print("Phone edited")
 
     def find_phone(self, search_phone):
         res = None
@@ -62,12 +76,11 @@ class AddressBook(UserDict):
     # Реалізовано метод add_record, який додає запис до self.data.
     def add_record(self, contact):
         self.data[contact.name.value] = contact
-        print("record added to address book")
 
     # Реалізовано метод find, який знаходить запис за ім'ям.
     def find(self, name):
-        for name, record in self.data.items():
-            if name == name.title():
+        for key, record in self.data.items():
+            if key == name.title():
                 return record
 
     # Реалізовано метод delete, який видаляє запис за ім'ям.
@@ -78,37 +91,49 @@ class AddressBook(UserDict):
                 print("Succes delete")
                 break
 
-    # Створення нової адресної книги
+    def show_birthday(self, name):
+        return self[name].birthday.value
+
+    #        for key, record in self.data.items():
+    #            if key == name.title():
+    #                if record.birthday:
+    #                    print(f"{name}'s Birthday at {record.birthday.value}")
+    #                    return record.birthday.value
+    #                else:
+    #                    print(f"{name} birthday is not added")
+    #                    return None
+
+    def birthdays(self):
+        birthdays_list = []
+        for key, record in self.items():
+            if record.birthday:
+                dateTimeObj = datetime.strptime(record.birthday.value, "%d.%m.%Y")
+                birthdays_list.append(
+                    {"name": key, "birthday": dateTimeObj},
+                )
+
+        get_birthdays_per_week(birthdays_list)
 
 
 book = AddressBook()
+if __name__ == "__main__":
+    # Створення запису для John
+    john_record = Record("John")
+    john_record.add_phone("1234567890")
+    john_record.add_phone("5555555555")
 
-# Створення запису для John
-john_record = Record("John")
-john_record.add_phone("1234567890")
-john_record.add_phone("5555555555")
+    # Додавання запису John до адресної книги
+    book.add_record(john_record)
 
-# Додавання запису John до адресної книги
-book.add_record(john_record)
-# Створення та додавання нового запису для Jane
-jane_record = Record("Jane")
-jane_record.add_phone("9876543210")
-book.add_record(jane_record)
+    # Знаходження та редагування телефону для John
+    john = book.find("John")
+    john.edit_phone("1234567890", "1112223333")
 
-# Виведення всіх записів у книзі
-for name, record in book.data.items():
-    print(record)
+    # Пошук конкретного телефону у записі John
+    john.add_birthday("19.10.2023")
 
-# Знаходження та редагування телефону для John
-john = book.find("John")
-john.edit_phone("1234567890", "1112223333")
-print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+    print(f"{john.name}: Birth {john.birthday}")  # Виведення: 5555555555
 
-
-# Пошук конкретного телефону у записі John
-found_phone = john.find_phone("5555555555")
-print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
-
-
-# Видалення запису Jane
-book.delete("Jane")
+    book.show_birthday("John")
+    # Видалення запису Jane
+    book.birthdays()

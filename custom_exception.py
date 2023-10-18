@@ -12,3 +12,11 @@ class NotFoundError(Exception):
 
 class NeedDataError(Exception):
     pass
+
+
+class ChangePhoneError(Exception):
+    pass
+
+
+class DateFormatError(Exception):
+    pass

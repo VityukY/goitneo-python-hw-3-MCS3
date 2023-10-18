@@ -2,12 +2,13 @@ from collections import defaultdict
 from datetime import datetime
 
 
-def birthday_callendar(
+def get_birthdays_per_week(
     data,
 ):  # перевірки на: пусте імя, на довжину даних, на відповідність полів (name/birthday)
     if not data:
-        print("There is no data for analize")
+        print("There is no birthdays to analize")
         return
+
     grouped_days = defaultdict(list)
     today = datetime.today().date()
 
@@ -69,8 +70,8 @@ data = [
     birthday_callendar(data) # 
 ]
 """
-
-data = [
-    {"names": "Bill Gates", "birthday": datetime(1955, 10, 4)},
-]
-birthday_callendar(data)
+if __name__ == "__main__":
+    data = [
+        {"names": "Bill Gates", "birthday": datetime(1955, 10, 4)},
+    ]
+    get_birthdays_per_week(data)
